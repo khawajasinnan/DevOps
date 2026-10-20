@@ -11,7 +11,10 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Installing Laravel dependencies'
-                sh 'composer install --no-interaction --prefer-dist'
+                sh 'php -v'
+                sh 'composer install --no-interaction --prefer-dist --no-progress'
+                sh 'cp -n .env.example .env || true'
+                sh 'php artisan key:generate --force'
             }
         }
 
@@ -26,6 +29,7 @@ pipeline {
             steps {
                 echo 'Preparing Laravel application for deployment'
                 sh 'php artisan --version'
+                sh 'php artisan route:list'
             }
         }
     }
