@@ -40,7 +40,7 @@ pipeline {
                     docker run --rm --entrypoint "" --env-file .env \
                       -e DB_CONNECTION=sqlite -e DB_DATABASE=:memory: -e APP_ENV=testing \
                       -e SESSION_DRIVER=array -e CACHE_STORE=array -e QUEUE_CONNECTION=sync \
-                      laravel-app:latest php artisan test
+                      laravel-app:latest sh -c "touch .env && php artisan test"
                 '''
             }
         }
@@ -55,7 +55,7 @@ pipeline {
                 sh '''
                     code=000
                     for i in $(seq 1 30); do
-                        code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000 || true)
+                        code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/todos || true)
                         echo "Attempt $i -> HTTP $code"
                         [ "$code" = "200" ] && break
                         sleep 3
