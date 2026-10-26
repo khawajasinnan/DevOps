@@ -39,11 +39,11 @@ pipeline {
                 sh '''
                     docker run --rm --entrypoint "" --env-file .env \
                       -e DB_CONNECTION=sqlite -e DB_DATABASE=:memory: -e APP_ENV=testing \
+                      -e SESSION_DRIVER=array -e CACHE_STORE=array -e QUEUE_CONNECTION=sync \
                       laravel-app:latest php artisan test
                 '''
             }
         }
-
         stage('Deploy') {
             steps {
                 sh 'docker compose up -d --remove-orphans'
