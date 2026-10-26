@@ -1,15 +1,56 @@
+name: laravel3tier
+
 services:
-  app:
-    build: .
+  web:
+    build:
+      context: .
+      target: web
+    image: laravel-web:latest
+    container_name: laravel_web
     ports:
-      - "8000:8000"
+      - "8000:80"
     depends_on:
-      - db
+      - app
+    networks:
+      - frontend-net
+
+  app:
+    build:
+      context: .
+      target: app
+    image: laravel-app:latest
+    container_name: laravel_app
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - frontend-net
+      - backend-net
 
   db:
     image: mysql:8.0
+    container_name: laravel_db
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: laravel
       MYSQL_USER: laravel
       MYSQL_PASSWORD: password
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    networks:
+      - backend-net
+
+volumes:
+  db_data:
+
+networks:
+  frontend-net:
+  backend-net:
